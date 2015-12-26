@@ -22,6 +22,7 @@
 import io
 import json
 from urllib.request import urlopen
+from urllib.error import URLError
 
 class ItunesCover:
     def __init__(self, artist, album, url):
@@ -30,7 +31,11 @@ class ItunesCover:
         self.cover = 0
 
     def get_cover(self):
-        request = urlopen(self.queryUrl)
+        try:
+            request = urlopen(self.queryUrl)
+        except URLError:
+            print("Can't connect to iTunes API, aborting artwork request...")
+            return self.cover
         response = json.loads(request.read().decode("utf-8"))
         if response["resultCount"] == 1 and "artworkUrl100" in response["results"][0]:
             self.coverUrl = response["results"][0]["artworkUrl100"].replace("100x100", "300x300")

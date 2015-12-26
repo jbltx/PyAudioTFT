@@ -49,7 +49,7 @@ Please send issues on github repo: %s""" % (__version__, __repository__)
 # -> "720p" for 1280x720
 # -> "768p" for 1024x768
 # -> "1080p" for 1920x1080
-__resolution__              = "240p"
+__resolution__              = "480p"
 
 # The main color for all labels (r,g,b)
 __main_color__              = (255,255,255)

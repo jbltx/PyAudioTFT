@@ -340,7 +340,7 @@ class UI:
         if self.mpcontrol.infos["status"]["state"] == "play":
             self.timeProgress = self.timeProgress + (1/self.framerate)
 
-        if not hasattr(self, "cover"):
+        if not hasattr(self, "cover") or self.cover == 0:
             self.cover = self.defaultCover
 
         self.screen.blit(self.background, (0,0))
