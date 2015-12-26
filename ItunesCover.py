@@ -33,7 +33,7 @@ class ItunesCover:
         request = urlopen(self.queryUrl)
         response = json.loads(request.read().decode("utf-8"))
         if response["resultCount"] == 1 and "artworkUrl100" in response["results"][0]:
-            self.coverUrl = response["results"][0]["artworkUrl100"]
+            self.coverUrl = response["results"][0]["artworkUrl100"].replace("100x100", "300x300")
             image_request = urlopen(self.coverUrl)
             image_response = image_request.read()
             self.cover = io.BytesIO(image_response)
