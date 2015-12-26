@@ -30,19 +30,19 @@ class LabelObject():
         self.alpha = 255
         self.timer_start = 0
         self.timer_end = 0
-        self.pos = surface.get_rect().move(x,y)
+        self.pos = self.surface.get_rect(x=self.x,y=self.y)
 
     def move(self):
-        self.timer_start = self.timer_start + 1
+        self.timer_start += 1
         if self.timer_start > self.idleTime:
-            if (self.pos[0]+self.pos[2]) > self.endX:
-                self.pos = self.pos.move(self.speed, 0)
-            elif self.pos[0] < self.x:
-                self.timer_end = self.timer_end + 1
+            if self.pos.right > self.endX:
+                self.pos.x += self.speed
+            elif self.pos.x < self.x:
+                self.timer_end += 1
                 if self.timer_end > self.idleTime:
-                    self.alpha = self.alpha - 25
+                    self.alpha -= 25
                 if self.timer_end > self.idleTime + 11:
-                    self.pos = self.surface.get_rect().move(self.x, self.y)
+                    self.pos = self.surface.get_rect(x=self.x,y=self.y)
                     self.timer_start = 0
                     self.timer_end = 0
                     self.alpha = 255

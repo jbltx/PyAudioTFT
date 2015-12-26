@@ -369,7 +369,8 @@ class UI:
 
         for lo in self.label_objects:
             lo.move()
-            self.screen.blit(lo.surface, lo.pos)
+            labelArea = pygame.Rect(lo.x-lo.pos.x, 0, lo.endX-lo.x, lo.surface.get_height())
+            self.screen.blit(lo.surface, (lo.x,lo.y) , area=labelArea )
 
         self.screen.blit(self.cover, (self.padding,self.padding))
 
