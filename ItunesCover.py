@@ -37,5 +37,4 @@ class ItunesCover:
             image_request = urlopen(self.coverUrl)
             image_response = image_request.read()
             self.cover = io.BytesIO(image_response)
-        print("boum")
         return self.cover

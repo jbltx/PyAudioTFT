@@ -27,7 +27,7 @@ from mpd import CommandError
 from select import select
 from MPControl import MPControl
 from ItunesCover import ItunesCover
-#from .LabelObject import LabelObject
+from LabelObject import LabelObject
 
 class UI:
     def __init__(self, resolution, mainColor, inactiveColor, titleFont, mainFont, resourcesDir, mpdHost, mpdPort, coverApiUrl):
@@ -194,7 +194,7 @@ class UI:
             titleData = str(self.mpcontrol.infos["currentsong"]["title"])
             artistData = str(self.mpcontrol.infos["currentsong"]["artist"])
             albumData = str(self.mpcontrol.infos["currentsong"]["album"])
-            yearData = str(self.mpcontrol.infos["currentsong"]["date"])
+            yearData = str(self.mpcontrol.infos["currentsong"]["date"])[0:4]
         else:
             titleData = ""
             artistData = ""
@@ -267,12 +267,38 @@ class UI:
         else:
             self.state = self.stopIcon
 
-        """
-        # Instanciate animation for surfaces
-        self.label_objects.append(LabelObject(title,PADDING,(FRAMERATE*-0.05)))
-        self.label_objects.append(LabelObject(artist, 45, (FRAMERATE * -0.05)))
-        self.label_objects.append(LabelObject(album, 69, (FRAMERATE * -0.05)))
-        """
+
+
+        self.label_objects.append(
+            LabelObject(
+                self.artist,
+                self.padding*2+self.factor*120,
+                self.padding,
+                self.screen.get_width()-self.padding,
+                self.framerate*-0.05,
+                self.framerate*3
+            )
+        )
+        self.label_objects.append(
+            LabelObject(
+                self.title,
+                self.padding*2+self.factor*120,
+                self.padding+self.artist.get_height()-self.factor*2,
+                self.screen.get_width()-self.padding,
+                self.framerate*-0.05,
+                self.framerate*3
+            )
+        )
+        self.label_objects.append(
+            LabelObject(
+                self.album,
+                self.padding*2+self.factor*120,
+                self.padding+self.artist.get_height()+self.title.get_height()-self.factor*4,
+                self.screen.get_width()-self.padding,
+                self.framerate*-0.05,
+                self.framerate*3
+            )
+        )
 
     def globalUpdate(self):
         self.mpcontrol.update()
@@ -299,11 +325,6 @@ class UI:
                     self.mpcontrol.client.send_idle()
 
         self.screen.fill((0,0,0))
-        """
-        for lo in self.label_objects:
-            lo.move()
-            self.screen.blit(lo.surface, lo.pos)
-        """
 
         if "time" in self.mpcontrol.infos["status"]:
             currentTimeData = self.mpcontrol.convertTime(
@@ -332,10 +353,7 @@ class UI:
             self.__last_cover_image__ = self.cover
             self.itunesCover = False
             self.coverThread = False
-        self.screen.blit(self.cover, (self.padding,self.padding))
-        self.screen.blit(self.artist, (self.cover.get_width()+self.padding*2, self.padding))
-        self.screen.blit(self.title, (self.cover.get_width()+self.padding*2, self.padding+self.artist.get_height()-self.factor*2))
-        self.screen.blit(self.album, (self.cover.get_width()+self.padding*2, self.padding+self.artist.get_height()+self.title.get_height()-self.factor*4))
+
         self.screen.blit(self.bitrate, (self.cover.get_width()+self.padding*2, 108*self.factor))
         self.screen.blit(self.meta, (self.cover.get_width()+self.padding*2, 122*self.factor))
         self.screen.blit(self.state, (self.padding, ( self.padding+self.cover.get_height()+int((self.screenHeight-self.padding-self.cover.get_height())*0.5)-int(self.state.get_height()*0.5) )))
@@ -348,6 +366,13 @@ class UI:
         self.screen.blit(self.totalTime, ( self.screenWidth-self.padding-self.totalTime.get_width(), self.screenHeight-self.padding*2.5 ))
         pygame.draw.rect(self.screen, self.mainColor, pygame.Rect(self.padding*2+self.state.get_width(), self.padding*2+self.cover.get_height()+self.repeat.get_height()+self.factor*5, self.screenWidth-(self.padding*3+self.state.get_width()), self.factor*11), 1*self.factor)
         pygame.draw.rect(self.screen, self.mainColor, pygame.Rect(self.padding*2+self.state.get_width(), self.padding*2+self.cover.get_height()+self.repeat.get_height()+self.factor*5, (self.screenWidth-(self.padding*3+self.state.get_width()))*self.ratioTimer, self.factor*11))
+
+        for lo in self.label_objects:
+            lo.move()
+            self.screen.blit(lo.surface, lo.pos)
+
+        self.screen.blit(self.cover, (self.padding,self.padding))
+
         pygame.display.update()
         self.clock.tick(self.framerate)
 
