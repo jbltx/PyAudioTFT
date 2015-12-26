@@ -29,17 +29,17 @@ $ python3 main.py
 ```
 
 ### Available shortcuts
-- Play/Pause : Spacebar
-- Stop : S
-- Next Song : Right Arrow
-- Previous Song : Left Arrow
-- Volume Up : Up Arrow
-- Volume Down : Down Arrow
-- Toggle Repeat : L
-- Toggle Single : O
-- Toggle Random : R
-- Toggle Consume : C
-- Close Application : Esc
+- Play/Pause : <kbd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</kbd>
+- Stop : <kbd>s</kbd>
+- Next Song : <kbd>→</kbd>
+- Previous Song : <kbd>←</kbd>
+- Volume Up : <kbd>↑</kbd>
+- Volume Down : <kbd>↓</kbd>
+- Toggle Repeat : <kbd>l</kbd>
+- Toggle Single : <kbd>o</kbd>
+- Toggle Random : <kbd>r</kbd>
+- Toggle Consume : <kbd>c</kbd>
+- Close Application : <kbd>Esc</kbd>
 
 ### Contribute
 Don't hesitate to fork this project and send back some pull requests !
