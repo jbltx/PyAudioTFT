@@ -172,6 +172,24 @@ class UI:
         self.stopIcon        = pygame.transform.scale(pygame.image.load(
             os.path.join(sys.path[0],resourcesDir,"stop.png")
         ).convert_alpha(), (45 * self.factor,45 * self.factor))
+        self.aacLogo         = pygame.transform.scale(pygame.image.load(
+            os.path.join(sys.path[0],resourcesDir,"format-aac.png")
+        ).convert_alpha(), (45 * self.factor,45 * self.factor))
+        self.wavLogo         = pygame.transform.scale(pygame.image.load(
+            os.path.join(sys.path[0],resourcesDir,"format-wav.png")
+        ).convert_alpha(), (45 * self.factor,45 * self.factor))
+        self.dsdLogo         = pygame.transform.scale(pygame.image.load(
+            os.path.join(sys.path[0],resourcesDir,"format-dsd.png")
+        ).convert_alpha(), (45 * self.factor,45 * self.factor))
+        self.flacLogo        = pygame.transform.scale(pygame.image.load(
+            os.path.join(sys.path[0],resourcesDir,"format-flac.png")
+        ).convert_alpha(), (45 * self.factor,45 * self.factor))
+        self.mp3Logo         = pygame.transform.scale(pygame.image.load(
+            os.path.join(sys.path[0],resourcesDir,"format-mp3.png")
+        ).convert_alpha(), (45 * self.factor,45 * self.factor))
+        self.oggLogo         = pygame.transform.scale(pygame.image.load(
+            os.path.join(sys.path[0],resourcesDir,"format-ogg.png")
+        ).convert_alpha(), (45 * self.factor,45 * self.factor))
 
     def updateUI(self):
         self.timeProgress = 0
@@ -195,6 +213,7 @@ class UI:
             artistData = str(self.mpcontrol.infos["currentsong"]["artist"])
             albumData = str(self.mpcontrol.infos["currentsong"]["album"])
             yearData = str(self.mpcontrol.infos["currentsong"]["date"])[0:4]
+            extensionData = self.mpcontrol.infos["currentsong"]["file"].split(".")[-1]
         else:
             titleData = ""
             artistData = ""
@@ -221,7 +240,20 @@ class UI:
             self.cover = self.defaultCover
             self.itunesCover = False
             self.coverThread = False
+            self.logo = self.wavLogo
         else:
+            if extensionData == "aac":
+                self.logo = self.aacLogo
+            elif extensionData == "dsd" or extensionData == "dxf":
+                self.logo = self.dsdLogo
+            elif extensionData == "flac":
+                self.logo = self.flacLogo
+            elif extensionData == "mp3":
+                self.logo = self.mp3Logo
+            elif extensionData == "ogg":
+                self.logo = self.oggLogo
+            else:
+                self.logo = self.wavLogo
             if artistData != self.__last_played_artist__ or albumData != self.__last_played_album__:
                 self.__last_played_album__ = albumData
                 self.__last_played_artist__ = artistData
@@ -356,6 +388,7 @@ class UI:
 
         self.screen.blit(self.bitrate, (self.cover.get_width()+self.padding*2, 108*self.factor))
         self.screen.blit(self.meta, (self.cover.get_width()+self.padding*2, 122*self.factor))
+        self.screen.blit(self.logo, (self.screenWidth-self.padding-self.logo.get_width(), 128*self.factor-self.logo.get_height()))
         self.screen.blit(self.state, (self.padding, ( self.padding+self.cover.get_height()+int((self.screenHeight-self.padding-self.cover.get_height())*0.5)-int(self.state.get_height()*0.5) )))
         self.screen.blit(self.consume, ( self.screenWidth-self.padding-self.consume.get_height(), self.padding*2+self.cover.get_height() ))
         self.screen.blit(self.random, ( self.padding*7+self.state.get_width()+self.repeat.get_width()+self.single.get_width(), self.padding*2+self.cover.get_height() ))
