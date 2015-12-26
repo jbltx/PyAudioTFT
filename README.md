@@ -28,5 +28,18 @@ Then you can launch the script:
 $ python3 main.py
 ```
 
+### Available shortcuts
+- Play/Pause : Spacebar
+- Stop : S
+- Next Song : Right Arrow
+- Previous Song : Left Arrow
+- Volume Up : Up Arrow
+- Volume Down : Down Arrow
+- Toggle Repeat : L
+- Toggle Single : O
+- Toggle Random : R
+- Toggle Consume : C
+- Close Application : Esc
+
 ### Contribute
 Don't hesitate to fork this project and send back some pull requests !
