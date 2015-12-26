@@ -6,15 +6,15 @@ Show Music Player Daemon informations on your TFT screen
 
 ---
 ### What you need
-- Python 3 (3.5.1 used)
-- PyGame with extended Image module (1.9.2 used)
-- Mpd2 Python library
-- MPD running on one of your machine (locally or not)
-- An Internet connection (to get album artworks via iTunes)
+- [Python 3](https://www.python.org/downloads/) (3.5.1 used)
+- [PyGame](http://www.pygame.org/download.shtml) with extended Image module (1.9.2 used)
+- [Mpd2](https://pypi.python.org/pypi/python-mpd2) Python library
+- [MPD](http://www.musicpd.org/download.html) running on one of your machine (locally or not)
+- [An Internet connection](https://www.youtube.com/watch?v=dQw4w9WgXcQ) (to get album artworks via iTunes)
 
 ### What is customizable
-- Interface resolution
-- Font file/size/color
+- Interface resolution (in `main.py`)
+- Font file/size/color (same...)
 - All icons and background (just overwrite present files in resources directory)
 
 ### How it works
