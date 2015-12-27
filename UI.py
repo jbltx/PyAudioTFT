@@ -101,7 +101,8 @@ class UI:
             self.screenHeight = 1080
 
         # PyGame initialization
-        pygame.init()
+        pygame.display.init()
+        pygame.mouse.set_visible(False)
         self.screen = pygame.display.set_mode(
             (self.screenWidth,self.screenHeight), pygame.FULLSCREEN, 0
         )
