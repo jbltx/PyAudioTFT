@@ -13,18 +13,19 @@ Show Music Player Daemon informations on your TFT screen
 - [An Internet connection](https://www.youtube.com/watch?v=dQw4w9WgXcQ) (to get album artworks via iTunes)
 
 ### What is customizable
-- Interface resolution (in `main.py`)
-- Font file/size/color (same...)
-- All icons and background (just overwrite present files in resources directory)
+- You can develop your own interface by creating a new theme in the `themes` directory
+- All default icons and background can be overwritten in the `resources` directory
 
 ### How it works
 You just need to set the host name or IP address where your MPD is located, and its port in `main.py` file:
-```
+```python
 __mpd_host__ = "localhost"
 __mpd_port__ = 6600
+__theme__    = "default"
+__fps__      = 12
 ```
 Then you can launch the script:
-```
+```bash
 $ python3 main.py
 ```
 

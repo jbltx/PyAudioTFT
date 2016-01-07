@@ -68,6 +68,7 @@ class Theme:
         self.totalTimeArea   = pygame.Surface((sw*0.2,sh*0.075),pygame.SRCALPHA)
         self.timingArea      = pygame.Surface((sw-padding*2-sh*0.2, sh*0.06),pygame.SRCALPHA)
 
+
     def convertTime(self, _seconds):
         hourMod = divmod(_seconds, 3600)
         minMod = divmod(hourMod[1], 60)

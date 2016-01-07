@@ -58,7 +58,7 @@ __mpd_port__                = 6600
 __theme__                   = "default"
 
 # Display Framerate
-__fps__                     = 10
+__fps__                     = 12
 
 #
 # END OF CONFIGURATION
