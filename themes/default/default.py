@@ -42,6 +42,8 @@ class Theme:
         sh                   = self.sh
         sw                   = self.sw
         padding              = self.padding
+        latoLight            = os.path.join(self.resourcesDir,self.mainFont)
+        latoRegular          = os.path.join(self.resourcesDir,self.titleFont)
         self.coverArea       = pygame.Surface((sh*0.5, sh*0.5))
         self.artistArea      = pygame.Surface((sw-sh*0.5-padding*3, sh*0.07),pygame.SRCALPHA)
         self.artistFont      = pygame.font.Font(latoLight,int(self.artistArea.get_height()*0.9))
@@ -59,7 +61,7 @@ class Theme:
         self.randomArea      = pygame.Surface((sh*0.18, sh*0.18),pygame.SRCALPHA)
         self.consumeArea     = pygame.Surface((sh*0.18, sh*0.18),pygame.SRCALPHA)
         self.stateArea       = pygame.Surface((sh*0.18, sh*0.18),pygame.SRCALPHA)
-        self.currentTimeArea = pygame.Surface((sw*0.2,sh*0.075),pygame.SRCALPHA)
+        self.currentTimeArea = pygame.Surface((sw*0.2, sh*0.075),pygame.SRCALPHA)
         self.timeFont        = pygame.font.Font(latoLight,int(self.currentTimeArea.get_height()*0.8))
         self.playlistArea    = pygame.Surface((sw*0.15,sh*0.075),pygame.SRCALPHA)
         self.volumeArea      = pygame.Surface((sw*0.13,sh*0.075),pygame.SRCALPHA)
@@ -74,13 +76,16 @@ class Theme:
         seconds = minMod[1]
         return "%02d:%02d:%02d" % (hours, minutes, seconds)
 
-    def updateUI(self,infos):
-        self.timeProgress = 0
+    def updateUI(self,infos,idleTime):
 
         if "time" in infos["status"]:
+            currentTimeData = self.convertTime(int(infos["status"]["time"].split(":")[0])+int(idleTime))
             totalTimeData = self.convertTime(int(infos["status"]["time"].split(":")[1]))
+            ratioTimeData = (int(infos["status"]["time"].split(":")[0])+int(idleTime))/int(infos["status"]["time"].split(":")[1])
         else:
+            currentTimeData = "00:00:00"
             totalTimeData = "00:00:00"
+            ratioTimeData = 1
         stateData         = str(infos["status"]["state"])
         countData         = str(infos["status"]["playlistlength"])
         if "pos" in infos["currentsong"]:
@@ -98,6 +103,7 @@ class Theme:
             artistData    = ""
             albumData     = ""
             yearData      = ""
+            extensionData = "wav"
         if "audio" in infos["status"]:
             samplingData  = str(infos["status"]["audio"].split(":")[0])
             bitsData      = str(infos["status"]["audio"].split(":")[1])
@@ -114,83 +120,143 @@ class Theme:
         randomData        = int(infos["status"]["random"])
         volumeData        = str(infos["status"]["volume"])+"%"
 
+        # CLEAN ALL ELEMENTS
+        self.coverArea.fill((0,0,0,0))
+        self.artistArea.fill((0,0,0,0))
+        self.titleArea.fill((0,0,0,0))
+        self.albumArea.fill((0,0,0,0))
+        self.bitrateArea.fill((0,0,0,0))
+        self.metaArea.fill((0,0,0,0))
+        self.logoArea.fill((0,0,0,0))
+        self.repeatArea.fill((0,0,0,0))
+        self.singleArea.fill((0,0,0,0))
+        self.randomArea.fill((0,0,0,0))
+        self.consumeArea.fill((0,0,0,0))
+        self.stateArea.fill((0,0,0,0))
+        self.currentTimeArea.fill((0,0,0,0))
+        self.playlistArea.fill((0,0,0,0))
+        self.volumeArea.fill((0,0,0,0))
+        self.totalTimeArea.fill((0,0,0,0))
+        self.timingArea.fill((0,0,0,0))
+
         # Update Background Image
         bg = pygame.transform.scale(pygame.image.load(os.path.join(self.resourcesDir,"background.png")).convert(), (self.sw, self.sh))
-        self.screen.blit(bg, (0,0))
 
         # Update Cover Image
         coverFile = Cover(artistData,albumData)
-        cover = pygame.image.load(coverFile).convert()
+        cover = pygame.image.load(coverFile.getData()).convert()
         cover = pygame.transform.scale(cover, (int(self.sh*0.5), int(self.sh*0.5)))
         self.coverArea.blit(cover, (0,0))
 
         # Update Artist Text
-        
+        artist = self.artistFont.render(artistData, 0, self.mainColor)
+        self.artistArea.blit(artist, (0,-2))
 
-        if titleData == "":
-            self.cover = self.defaultCover
-            self.itunesCover = False
-            self.coverThread = False
-            self.logo = self.wavLogo
-        else:
-            if extensionData == "aac":
-                self.logo = self.aacLogo
-            elif extensionData == "dsd" or extensionData == "dxf":
-                self.logo = self.dsdLogo
-            elif extensionData == "flac":
-                self.logo = self.flacLogo
-            elif extensionData == "mp3":
-                self.logo = self.mp3Logo
-            elif extensionData == "ogg":
-                self.logo = self.oggLogo
-            else:
-                self.logo = self.wavLogo
-            if artistData != self.__last_played_artist__ or albumData != self.__last_played_album__:
-                self.__last_played_album__ = albumData
-                self.__last_played_artist__ = artistData
-                self.itunesCover = ItunesCover(artistData, albumData, self.coverApiUrl)
-                self.coverThread = threading.Thread(target=self.itunesCover.get_cover, args=(), kwargs={})
-                self.coverThread.start()
-            else:
-                self.cover = self.__last_cover_image__
-        self.title = self.titleFontSurface.render(titleData, 0, self.mainColor)
-        self.artist = self.artistFontSurface.render(artistData, 0, self.mainColor)
-        self.album = self.albumFontSurface.render(
-            albumData + " - " + yearData, 0, self.mainColor
-        )
-        self.bitrate = self.mainFontSurface.render(
-            bitrateData + " kbps", 0, self.mainColor
-        )
-        self.meta = self.mainFontSurface.render(
-            channelsData + "ch/" + bitsData + "bits/" + samplingData + "Hz", 0, self.mainColor
-        )
-        #volume HERE
-        if repeatData == 1:
-            self.repeat = self.activeRepeat
-        else:
-            self.repeat = self.inactiveRepeat
-        if singleData == 1:
-            self.single = self.activeSingle
-        else:
-            self.single = self.inactiveSingle
-        if consumeData == 1:
-            self.consume = self.activeConsume
-        else:
-            self.consume = self.inactiveConsume
-        if randomData == 1:
-            self.random = self.activeRandom
-        else:
-            self.random = self.inactiveRandom
-        self.playlist = self.mainFontSurface.render(positionData + "/" + countData, 0, self.mainColor)
-        self.totalTime = self.mainFontSurface.render(totalTimeData, 0, self.mainColor)
-        if stateData == "play":
-            self.state = self.playIcon
-        elif stateData == "pause":
-            self.state = self.pauseIcon
-        else:
-            self.state = self.stopIcon
+        # Update Title Text
+        title = self.titleFont.render(titleData, 0, self.mainColor)
+        self.titleArea.blit(title, (0,-2))
+
+        # Update Album Text
+        album = self.albumFont.render(albumData, 0, self.mainColor)
+        self.albumArea.blit(album, (0,-2))
+
+        # Update Format Logo Image
+        logoFile = self.getFormatLogo(extensionData)
+        logo = pygame.image.load(logoFile).convert_alpha()
+        logo = pygame.transform.scale(logo,(self.logoArea.get_width(),self.logoArea.get_height()))
+        self.logoArea.blit(logo, (0,0))
+
+        # Update Bitrate Text
+        bitrate = self.bitrateFont.render(bitrateData + " kbps", 0, self.mainColor)
+        self.bitrateArea.blit(bitrate, (0,-2))
+
+        # Update Meta Text
+        meta = self.metaFont.render("%sch/%sbits/%sHz" % (channelsData, bitsData, samplingData), 0, self.mainColor)
+        self.metaArea.blit(meta, (0,-2))
+
+        # Update Icons Image
+        repeatFile = self.getIconByState("repeat", repeatData)
+        repeat = pygame.image.load(repeatFile).convert_alpha()
+        repeat = pygame.transform.scale(repeat,(int(self.sh*0.18),int(self.sh*0.18)))
+        self.repeatArea.blit(repeat, (0,0))
+
+        singleFile = self.getIconByState("single", singleData)
+        single = pygame.image.load(singleFile).convert_alpha()
+        single = pygame.transform.scale(single,(int(self.sh*0.18),int(self.sh*0.18)))
+        self.singleArea.blit(single, (0,0))
+
+        randomFile = self.getIconByState("random", randomData)
+        random = pygame.image.load(randomFile).convert_alpha()
+        random = pygame.transform.scale(random,(int(self.sh*0.18),int(self.sh*0.18)))
+        self.randomArea.blit(random, (0,0))
+
+        consumeFile = self.getIconByState("consume", consumeData)
+        consume = pygame.image.load(consumeFile).convert_alpha()
+        consume = pygame.transform.scale(consume,(int(self.sh*0.18),int(self.sh*0.18)))
+        self.consumeArea.blit(consume, (0,0))
+
+        # Update Playback Icon Image
+        stateFile = self.getStateIcon(stateData)
+        state = pygame.image.load(stateFile).convert_alpha()
+        state = pygame.transform.scale(state,(int(self.sh*0.18),int(self.sh*0.18)))
+        self.stateArea.blit(state, (0,0))
+
+        # Update Current Time Text
+        currentTime = self.timeFont.render(currentTimeData,0, self.mainColor)
+        self.currentTimeArea.blit(currentTime, (0,-2))
+
+        # Update Playlist Text
+        playlist = self.timeFont.render("%s/%s" % (positionData, countData),0, self.mainColor)
+        self.playlistArea.blit(playlist, (0,-2))
+
+        # Update Volume Text
+        volume = self.timeFont.render(volumeData,0,self.mainColor)
+        self.volumeArea.blit(volume, (0,-2))
+
+        # Update Total Time Text
+        totalTime = self.timeFont.render(totalTimeData,0,self.mainColor)
+        self.totalTimeArea.blit(totalTime, (self.totalTimeArea.get_width()-totalTime.get_width(),-2))
+
+        # Update Time Bar
+        timingOutline = pygame.Rect(0,0,self.timingArea.get_width(),self.timingArea.get_height())
+        pygame.draw.rect(self.timingArea, self.mainColor, timingOutline, 2)
+        timeScale = (self.timingArea.get_width()-12)*ratioTimeData
+        timing = pygame.Rect(0,0,timeScale,self.timingArea.get_height())
+        pygame.draw.rect(self.timingArea, self.mainColor, timing)
 
 
+        # BLIT ELEMENTS
+        self.screen.blit(bg, (0,0))
+        self.screen.blit(self.coverArea, (self.padding,self.padding))
+        self.screen.blit(self.artistArea, (self.padding*2+self.sh*0.5, self.padding))
+        self.screen.blit(self.titleArea, (self.padding*2+self.sh*0.5, self.padding+self.sh*0.08))
+        self.screen.blit(self.albumArea, (self.padding*2+self.sh*0.5, self.padding+self.sh*0.19))
+        self.screen.blit(self.logoArea, (self.sw-self.padding-self.logoArea.get_width(), self.sh*0.32))
+        self.screen.blit(self.bitrateArea, (self.padding*2+self.sh*0.5, self.sh*0.40))
+        self.screen.blit(self.metaArea, (self.padding*2+self.sh*0.5, self.sh*0.48))
+        self.screen.blit(self.repeatArea, (self.padding,self.padding*1.5+self.sh*0.5))
+        self.screen.blit(self.singleArea, (self.sw*0.3, self.padding*1.5+self.sh*0.5))
+        self.screen.blit(self.randomArea, (self.sw*0.7-self.sh*0.18, self.padding*1.5+self.sh*0.5))
+        self.screen.blit(self.consumeArea, (self.sw-self.padding-self.sh*0.18,self.padding*1.5+self.sh*0.5))
+        self.screen.blit(self.stateArea, (self.padding, self.sh-self.padding-self.sh*0.18))
+        self.screen.blit(self.currentTimeArea, (self.padding+self.sh*0.2, self.sh-self.padding-self.sh*0.17))
+        self.screen.blit(self.playlistArea, (self.padding+self.sw*0.15+self.sh*0.3, self.sh-self.padding-self.sh*0.17))
+        self.screen.blit(self.volumeArea, (self.padding+self.sw*0.33+self.sh*0.3, self.sh-self.padding-self.sh*0.17))
+        self.screen.blit(self.totalTimeArea, (self.sw-self.padding-self.sw*0.2, self.sh-self.padding-self.sh*0.17))
+        self.screen.blit(self.timingArea, (self.padding+self.sh*0.2,self.sh-self.padding-self.sh*0.08))
+
+    def getFormatLogo(self, extension):
+        return os.path.join(self.resourcesDir,"format-%s.png" % (extension))
+
+    def getIconByState(self,iconName,isActive):
+        if isActive == 1:
+            state = "active"
+        else:
+            state = "inactive"
+        return os.path.join(self.resourcesDir,"%s-%s.png" % (iconName,state))
+
+    def getStateIcon(self,state):
+        return os.path.join(self.resourcesDir,"%s.png" % (state))
 
     def checkTheme(self):
         if len(self.mainColor) != 3:

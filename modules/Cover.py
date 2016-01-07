@@ -19,17 +19,19 @@
 #
 # By reading this code you agree not to ridicule the author =)
 
-import io
-import json
+import sys, os, io, json
 from urllib.request import urlopen
 from urllib.error import URLError
 
-class ItunesCover:
-    def __init__(self, artist, album, url):
+class Cover:
+    def __init__(self, artist, album):
         self.itunesUrl = "https://itunes.apple.com/search?media=music&entity=album&limit=1&term="
-        self.queryUrl = url+artist.replace(" ","+") + "+" + album.replace(" ","+")
+        self.queryUrl = self.itunesUrl+artist.replace(" ","+") + "+" + album.replace(" ","+")
         self.coverUrl = ""
         self.cover = 0
+
+    def getData(self):
+        return os.path.join(sys.path[0],"themes","default","resources","cover.png")
 
     def get_cover(self):
         try:
