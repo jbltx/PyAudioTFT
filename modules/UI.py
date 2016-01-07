@@ -19,178 +19,35 @@
 #
 # By reading this code you agree not to ridicule the author =)
 
-import sys
-import os.path
-import pygame
-import threading
-from mpd import CommandError
-from select import select
-from MPControl import MPControl
-from ItunesCover import ItunesCover
-from LabelObject import LabelObject
+import sys, os, pygame, threading
+from pydoc               import locate
+from mpd                 import CommandError
+from select              import select
+from modules.MPControl   import MPControl
+from modules.ItunesCover import ItunesCover
+from modules.LabelObject import LabelObject
 
 class UI:
-    def __init__(self, resolution, mainColor, inactiveColor, titleFont, mainFont, resourcesDir, mpdHost, mpdPort, coverApiUrl):
+    def __init__(self, mpdHost, mpdPort, themeName, fps):
 
-        self.__last_played_artist__ = ""
-        self.__last_played_album__   = ""
-        self.__last_cover_image__ = 0
+        Theme = locate('themes.'+themeName+'.'+themeName+'.Theme')
 
-        r = resolution
-        if r != "240p" and r != "480p" and r != "720p" and r != "768p" and r != "1080p":
-            print("Error : Wrong resolution configuration, exiting...")
-            sys.exit(1)
-
-        if len(mainColor) != 3:
-            print("Error : Wrong main color list length, exiting...")
-            sys.exit(1)
-        else:
-            for c in mainColor:
-                if c < 0 or c > 255:
-                    print("Error : Wrong main color value(s), exiting...")
-                    sys.exit(1)
-
-        if len(inactiveColor) != 3:
-            print("Error : Wrong inactive color list length, exiting...")
-            sys.exit(1)
-        else:
-            for c in inactiveColor:
-                if c < 0 or c > 255:
-                    print("Error : Wrong inactive color value(s), exiting...")
-                    sys.exit(1)
-
-        if not os.path.isdir(os.path.join(sys.path[0], resourcesDir)):
-            print("Error : The resources directory doesn't exist, exiting...")
-            sys.exit(1)
-
-        if not os.path.isfile(os.path.join(sys.path[0],resourcesDir,titleFont)):
-            print("Error : Font file for title doesn't exist, exiting...")
-            sys.exit(1)
-
-        if not os.path.isfile(os.path.join(sys.path[0],resourcesDir,mainFont)):
-            print("Error : Main font file doesn't exist, exiting...")
-            sys.exit(1)
-
-        if pygame.image.get_extended() == 0:
-            print("Error : Can't use extended Image module from PyGame, exiting...")
-            sys.exit(1)
-
-        # MPControl initialization
-        self.mpcontrol = MPControl(mpdHost,mpdPort)
+        self.__last_played_artist__    = ""
+        self.__last_played_album__     = ""
+        self.__last_cover_image__      = 0
+        self.mpdHost                   = mpdHost
+        self.mpdPort                   = mpdPort
+        self.themeName                 = themeName
+        self.framerate                 = fps
+        self.over                      = False
+        self.clock                     = pygame.time.Clock()
+        self.mpcontrol                 = MPControl(mpdHost,mpdPort)
         self.mpcontrol.update()
-
-        if r == "240p":
-            self.factor       = 1
-            self.screenWidth  = 320
-            self.screenHeight = 240
-        if r == "480p":
-            self.factor       = 2
-            self.screenWidth  = 640
-            self.screenHeight = 480
-        if r == "720p":
-            self.factor       = 3
-            self.screenWidth  = 1280
-            self.screenHeight = 720
-        if r == "768p":
-            self.factor       = 3
-            self.screenWidth  = 1024
-            self.screenHeight = 768
-        if r == "1080p":
-            self.factor       = 4
-            self.screenWidth  = 1920
-            self.screenHeight = 1080
-
-        # PyGame initialization
         pygame.display.init()
         pygame.mouse.set_visible(False)
-        self.screen = pygame.display.set_mode(
-            (self.screenWidth,self.screenHeight), pygame.FULLSCREEN, 0
-        )
-
-        self.mainColor      = mainColor
-        self.inactiveColor  = inactiveColor
-        self.framerate      = 20
-        self.padding        = (16 * self.factor)
-        self.titleFontSize  = (25 * self.factor)
-        self.artistFontSize = (20 * self.factor)
-        self.albumFontSize  = (15 * self.factor)
-        self.mainFontSize   = (12 * self.factor)
-        self.over           = False
-        self.clock          = pygame.time.Clock()
-        self.timeProgress   = 0
-        self.coverApiUrl    = coverApiUrl
-
-        pygame.font.init()
-        self.titleFontSurface = pygame.font.Font(
-            os.path.join(sys.path[0],resourcesDir,titleFont), self.titleFontSize
-        )
-        self.artistFontSurface = pygame.font.Font(
-            os.path.join(sys.path[0],resourcesDir,mainFont), self.artistFontSize
-        )
-        self.albumFontSurface = pygame.font.Font(
-            os.path.join(sys.path[0],resourcesDir,mainFont), self.albumFontSize
-        )
-        self.mainFontSurface = pygame.font.Font(
-            os.path.join(sys.path[0],resourcesDir,mainFont), self.mainFontSize
-        )
-
-        self.background      = pygame.transform.scale(pygame.image.load(
-            os.path.join(sys.path[0],resourcesDir,"background.png")
-        ).convert(), (self.screenWidth, self.screenHeight))
-        self.defaultCover    = pygame.transform.scale(pygame.image.load(
-            os.path.join(sys.path[0],resourcesDir,"cover.png")
-        ).convert(), (120 * self.factor,120 * self.factor))
-        self.activeRepeat    = pygame.transform.scale(pygame.image.load(
-            os.path.join(sys.path[0],resourcesDir,"repeat-active.png")
-        ).convert_alpha(), (28 * self.factor,28 * self.factor))
-        self.inactiveRepeat  = pygame.transform.scale(pygame.image.load(
-            os.path.join(sys.path[0],resourcesDir,"repeat-inactive.png")
-        ).convert_alpha(), (28 * self.factor,28 * self.factor))
-        self.activeSingle    = pygame.transform.scale(pygame.image.load(
-            os.path.join(sys.path[0],resourcesDir,"single-active.png")
-        ).convert_alpha(), (28 * self.factor,28 * self.factor))
-        self.inactiveSingle  = pygame.transform.scale(pygame.image.load(
-            os.path.join(sys.path[0],resourcesDir,"single-inactive.png")
-        ).convert_alpha(), (28 * self.factor,28 * self.factor))
-        self.activeConsume   = pygame.transform.scale(pygame.image.load(
-            os.path.join(sys.path[0],resourcesDir,"consume-active.png")
-        ).convert_alpha(), (28 * self.factor,28 * self.factor))
-        self.inactiveConsume = pygame.transform.scale(pygame.image.load(
-            os.path.join(sys.path[0],resourcesDir,"consume-inactive.png")
-        ).convert_alpha(), (28 * self.factor,28 * self.factor))
-        self.activeRandom    = pygame.transform.scale(pygame.image.load(
-            os.path.join(sys.path[0],resourcesDir,"random-active.png")
-        ).convert_alpha(), (28 * self.factor,28 * self.factor))
-        self.inactiveRandom  = pygame.transform.scale(pygame.image.load(
-            os.path.join(sys.path[0],resourcesDir,"random-inactive.png")
-        ).convert_alpha(), (28 * self.factor,28 * self.factor))
-        self.playIcon        = pygame.transform.scale(pygame.image.load(
-            os.path.join(sys.path[0],resourcesDir,"play.png")
-        ).convert_alpha(), (45 * self.factor,45 * self.factor))
-        self.pauseIcon       = pygame.transform.scale(pygame.image.load(
-            os.path.join(sys.path[0],resourcesDir,"pause.png")
-        ).convert_alpha(), (45 * self.factor,45 * self.factor))
-        self.stopIcon        = pygame.transform.scale(pygame.image.load(
-            os.path.join(sys.path[0],resourcesDir,"stop.png")
-        ).convert_alpha(), (45 * self.factor,45 * self.factor))
-        self.aacLogo         = pygame.transform.scale(pygame.image.load(
-            os.path.join(sys.path[0],resourcesDir,"format-aac.png")
-        ).convert_alpha(), (45 * self.factor,45 * self.factor))
-        self.wavLogo         = pygame.transform.scale(pygame.image.load(
-            os.path.join(sys.path[0],resourcesDir,"format-wav.png")
-        ).convert_alpha(), (45 * self.factor,45 * self.factor))
-        self.dsdLogo         = pygame.transform.scale(pygame.image.load(
-            os.path.join(sys.path[0],resourcesDir,"format-dsd.png")
-        ).convert_alpha(), (45 * self.factor,45 * self.factor))
-        self.flacLogo        = pygame.transform.scale(pygame.image.load(
-            os.path.join(sys.path[0],resourcesDir,"format-flac.png")
-        ).convert_alpha(), (45 * self.factor,45 * self.factor))
-        self.mp3Logo         = pygame.transform.scale(pygame.image.load(
-            os.path.join(sys.path[0],resourcesDir,"format-mp3.png")
-        ).convert_alpha(), (45 * self.factor,45 * self.factor))
-        self.oggLogo         = pygame.transform.scale(pygame.image.load(
-            os.path.join(sys.path[0],resourcesDir,"format-ogg.png")
-        ).convert_alpha(), (45 * self.factor,45 * self.factor))
+        self.screen       = pygame.display.set_mode((0,0), pygame.FULLSCREEN, 0)
+        self.theme                     = Theme(self.screen)
+        self.timeProgress              = 0
 
     def updateUI(self):
         self.timeProgress = 0

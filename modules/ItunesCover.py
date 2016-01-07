@@ -26,6 +26,7 @@ from urllib.error import URLError
 
 class ItunesCover:
     def __init__(self, artist, album, url):
+        self.itunesUrl = "https://itunes.apple.com/search?media=music&entity=album&limit=1&term="
         self.queryUrl = url+artist.replace(" ","+") + "+" + album.replace(" ","+")
         self.coverUrl = ""
         self.cover = 0

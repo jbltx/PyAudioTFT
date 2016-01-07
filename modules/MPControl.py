@@ -19,10 +19,7 @@
 #
 # By reading this code you agree not to ridicule the author =)
 
-import sys
-import socket
-import pygame
-import math
+import sys, socket, pygame
 from mpd import MPDClient
 
 class MPControl:
@@ -71,14 +68,6 @@ class MPControl:
             self.client.setvol(int(self.infos["status"]["volume"]) + 5)
         if key == pygame.K_DOWN and int(self.infos["status"]["volume"]) > 0:
             self.client.setvol(int(self.infos["status"]["volume"]) - 5)
-
-    def convertTime(self, _seconds):
-        hourMod = divmod(_seconds, 3600)
-        minMod = divmod(hourMod[1], 60)
-        hours = hourMod[0]
-        minutes = minMod[0]
-        seconds = minMod[1]
-        return "%02d:%02d:%02d" % (hours, minutes, seconds)
 
     def tryConnection(self):
         try:
