@@ -43,7 +43,7 @@ class UI:
         self.mpcontrol.update()
         pygame.display.init()
         pygame.mouse.set_visible(False)
-        self.screen                    = pygame.display.set_mode((320,240), pygame.FULLSCREEN, 0)
+        self.screen                    = pygame.display.set_mode((0,0), pygame.FULLSCREEN, 0)
         self.theme                     = Theme(self.screen,mpdMusicDir)
         self.timeProgress              = 0
 
