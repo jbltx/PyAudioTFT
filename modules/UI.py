@@ -26,7 +26,7 @@ from select              import select
 from modules.MPControl   import MPControl
 
 class UI:
-    def __init__(self, mpdHost, mpdPort, themeName, fps):
+    def __init__(self, mpdHost, mpdPort, mpdMusicDir, themeName, fps):
 
         Theme = locate('themes.'+themeName+'.'+themeName+'.Theme')
 
@@ -44,12 +44,13 @@ class UI:
         pygame.display.init()
         pygame.mouse.set_visible(False)
         self.screen                    = pygame.display.set_mode((320,240), pygame.FULLSCREEN, 0)
-        self.theme                     = Theme(self.screen)
+        self.theme                     = Theme(self.screen,mpdMusicDir)
         self.timeProgress              = 0
 
     def globalUpdate(self):
         self.mpcontrol.update()
-        self.theme.updateUI(self.mpcontrol.infos,self.timeProgress)
+        self.theme.handleInfos(self.mpcontrol.infos)
+        self.theme.updateUI(self.timeProgress)
         self.mpcontrol.client.send_idle()
 
     def loop(self):
@@ -74,7 +75,7 @@ class UI:
 
         if self.mpcontrol.infos["status"]["state"] == "play":
             self.timeProgress = self.timeProgress + (1/self.framerate)
-            self.theme.updateUI(self.mpcontrol.infos,self.timeProgress)
+            self.theme.updateUI(self.timeProgress)
         pygame.display.update()
         self.clock.tick(self.framerate)
 

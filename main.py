@@ -54,6 +54,9 @@ __mpd_host__                = "localhost"
 # MPD server port number
 __mpd_port__                = 6600
 
+# MPD Music directory
+__mpd_music_dir__          = "/path/to/your/mpd/music/dir"
+
 # Choose a theme
 __theme__                   = "default"
 
@@ -71,7 +74,7 @@ def main():
         else:
             print("No valid arg(s), exiting...")
     else:
-        application = UI(__mpd_host__, __mpd_port__, __theme__, __fps__)
+        application = UI(__mpd_host__, __mpd_port__, __mpd_music_dir__, __theme__, __fps__)
         application.load()
 
 if __name__ == "__main__":

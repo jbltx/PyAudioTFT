@@ -19,30 +19,43 @@
 #
 # By reading this code you agree not to ridicule the author =)
 
-import sys, os, io, json
+import os, io, json
 from urllib.request import urlopen
 from urllib.error import URLError
 
 class Cover:
-    def __init__(self, artist, album):
-        self.itunesUrl = "https://itunes.apple.com/search?media=music&entity=album&limit=1&term="
-        self.queryUrl = self.itunesUrl+artist.replace(" ","+") + "+" + album.replace(" ","+")
-        self.coverUrl = ""
-        self.cover = 0
+    def __init__(self, mpdMusicDir, defaultCover):
+        self.localDir     = mpdMusicDir
+        self.itunesUrl    = "https://itunes.apple.com/search?media=music&entity=album&limit=1&term="
+        self.defaultCover = defaultCover
 
-    def getData(self):
-        return os.path.join(sys.path[0],"themes","default","resources","cover.png")
+    def getData(self, artist, album, musicFile):
 
-    def get_cover(self):
+        if musicFile == "":
+            return self.defaultCover
+
+        # Search cover locally first
+        pathObjs = musicFile.split("/")
+        path = self.localDir
+        for i in range(len(pathObjs)-1):
+            path += "/%s" % (pathObjs[i])
+        for f in os.listdir(path):
+            if f.endswith("jpeg") or f.endswith("jpg") or f.endswith("png"):
+                return "%s/%s" % (path, f)
+
+        # Search cover online
+        queryUrl  = self.itunesUrl+artist.replace(" ","+") + "+" + album.replace(" ","+")
         try:
-            request = urlopen(self.queryUrl)
+            request = urlopen(queryUrl)
         except URLError:
-            print("Can't connect to iTunes API, aborting artwork request...")
-            return self.cover
+            return self.defaultCover
         response = json.loads(request.read().decode("utf-8"))
         if response["resultCount"] == 1 and "artworkUrl100" in response["results"][0]:
-            self.coverUrl = response["results"][0]["artworkUrl100"].replace("100x100", "300x300")
+            coverUrl = response["results"][0]["artworkUrl100"].replace("100x100", "300x300")
             image_request = urlopen(self.coverUrl)
             image_response = image_request.read()
-            self.cover = io.BytesIO(image_response)
-        return self.cover
+            cover = io.BytesIO(image_response)
+            return cover
+
+        # Nothing found, return default theme cover
+        return self.defaultCover
