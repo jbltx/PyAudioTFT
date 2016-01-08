@@ -22,7 +22,7 @@
 from modules.UI import UI
 import sys
 
-__version__="0.1"
+__version__="1.0"
 __author__="Mickael Bonfill <mickael.bonfill@gmail.com>"
 __repository__="https://github.com/jbltx/PyAudioTFT"
 __doc__="""PyAudioTFT v%s (c) 2015 %s

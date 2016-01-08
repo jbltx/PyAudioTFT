@@ -1,6 +1,5 @@
-# PyAudioTFT
+# PyAudioTFT &nbsp; ![Version](https://img.shields.io/badge/version-1.0-green.svg)
 Show Music Player Daemon informations on your TFT screen
-
 
 ![PyAudioTFT Demo Show](http://i.imgur.com/zGYXt6k.png)
 
