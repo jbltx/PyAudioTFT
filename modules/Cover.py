@@ -19,27 +19,43 @@
 #
 # By reading this code you agree not to ridicule the author =)
 
-import io
-import json
+import os, io, json
 from urllib.request import urlopen
 from urllib.error import URLError
 
-class ItunesCover:
-    def __init__(self, artist, album, url):
-        self.queryUrl = url+artist.replace(" ","+") + "+" + album.replace(" ","+")
-        self.coverUrl = ""
-        self.cover = 0
+class Cover:
+    def __init__(self, mpdMusicDir, defaultCover):
+        self.localDir     = mpdMusicDir
+        self.itunesUrl    = "https://itunes.apple.com/search?media=music&entity=album&limit=1&term="
+        self.defaultCover = defaultCover
 
-    def get_cover(self):
+    def getData(self, artist, album, musicFile):
+
+        if musicFile == "":
+            return self.defaultCover
+
+        # Search cover locally first
+        pathObjs = musicFile.split("/")
+        path = self.localDir
+        for i in range(len(pathObjs)-1):
+            path += "/%s" % (pathObjs[i])
+        for f in os.listdir(path):
+            if f.endswith("jpeg") or f.endswith("jpg") or f.endswith("png"):
+                return "%s/%s" % (path, f)
+
+        # Search cover online
+        queryUrl  = self.itunesUrl+artist.replace(" ","+") + "+" + album.replace(" ","+")
         try:
-            request = urlopen(self.queryUrl)
+            request = urlopen(queryUrl)
         except URLError:
-            print("Can't connect to iTunes API, aborting artwork request...")
-            return self.cover
+            return self.defaultCover
         response = json.loads(request.read().decode("utf-8"))
         if response["resultCount"] == 1 and "artworkUrl100" in response["results"][0]:
-            self.coverUrl = response["results"][0]["artworkUrl100"].replace("100x100", "300x300")
+            coverUrl = response["results"][0]["artworkUrl100"].replace("100x100", "300x300")
             image_request = urlopen(self.coverUrl)
             image_response = image_request.read()
-            self.cover = io.BytesIO(image_response)
-        return self.cover
+            cover = io.BytesIO(image_response)
+            return cover
+
+        # Nothing found, return default theme cover
+        return self.defaultCover
